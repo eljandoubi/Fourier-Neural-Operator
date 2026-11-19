@@ -86,6 +86,77 @@ class BenchmarkHyperparams:
     deeponet_latent_dim: int | None = None
 
 
+def add_run_arguments(parser: argparse.ArgumentParser) -> None:
+    """Add the size, training and architecture flags of fno-benchmark and fno-pipeline."""
+    parser.add_argument("--n-train", type=int, default=512)
+    parser.add_argument("--n-test", type=int, default=64)
+    parser.add_argument(
+        "--epochs", type=int, default=20, help="Epochs for FNO/DeepONet."
+    )
+    parser.add_argument("--pinn-epochs", type=int, default=500)
+    parser.add_argument(
+        "--device", default=None, help="Defaults to auto-detected (cuda/mps/cpu)."
+    )
+    parser.add_argument(
+        "--lr", type=float, default=1e-3, help="Learning rate for FNO/DeepONet/PINN."
+    )
+    parser.add_argument(
+        "--scheduler-step",
+        type=int,
+        default=None,
+        help="StepLR: decay lr every N epochs (unset: constant lr). PDEBench's own FNO baselines use 100.",
+    )
+    parser.add_argument(
+        "--scheduler-gamma",
+        type=float,
+        default=0.5,
+        help="StepLR decay factor, only used if --scheduler-step is set.",
+    )
+    parser.add_argument(
+        "--fno-modes",
+        type=int,
+        default=None,
+        help="Override FNO's Fourier mode count (per-equation default otherwise).",
+    )
+    parser.add_argument(
+        "--fno-width",
+        type=int,
+        default=None,
+        help="Override FNO's channel width (per-equation default otherwise).",
+    )
+    parser.add_argument(
+        "--fno-n-layers",
+        type=int,
+        default=None,
+        help="Override FNO's number of spectral layers (per-equation default otherwise).",
+    )
+    parser.add_argument(
+        "--deeponet-hidden-dim",
+        type=int,
+        default=None,
+        help="Override DeepONet's branch/trunk hidden width (default 128).",
+    )
+    parser.add_argument(
+        "--deeponet-latent-dim",
+        type=int,
+        default=None,
+        help="Override DeepONet's latent (dot-product) dimension (default 64).",
+    )
+
+
+def hyperparams_from_args(args: argparse.Namespace) -> BenchmarkHyperparams:
+    return BenchmarkHyperparams(
+        lr=args.lr,
+        scheduler_step=args.scheduler_step,
+        scheduler_gamma=args.scheduler_gamma,
+        fno_modes=args.fno_modes,
+        fno_width=args.fno_width,
+        fno_n_layers=args.fno_n_layers,
+        deeponet_hidden_dim=args.deeponet_hidden_dim,
+        deeponet_latent_dim=args.deeponet_latent_dim,
+    )
+
+
 def save_results(results: list[BenchmarkResult], path: str | Path) -> None:
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -533,8 +604,12 @@ def run_burgers_benchmark(
     device = device or trainer.auto_device()
     hp = hyperparams or BenchmarkHyperparams()
 
-    full_train = Burgers1DDataset(file_path, initial_step=10, split="train")
-    full_test = Burgers1DDataset(file_path, initial_step=10, split="test")
+    full_train = Burgers1DDataset(
+        file_path, initial_step=10, split="train", max_samples=n_train
+    )
+    full_test = Burgers1DDataset(
+        file_path, initial_step=10, split="test", max_samples=n_test
+    )
 
     low_res_train = Subset(
         _DownsampledBurgersView(full_train, stride=4), range(n_train)
@@ -908,15 +983,7 @@ def main(argv: list[str] | None = None) -> None:
             "shard0 (see: uv run fno-download pdebench-navierstokes2d)."
         ),
     )
-    parser.add_argument("--n-train", type=int, default=512)
-    parser.add_argument("--n-test", type=int, default=64)
-    parser.add_argument(
-        "--epochs", type=int, default=20, help="Epochs for FNO/DeepONet."
-    )
-    parser.add_argument("--pinn-epochs", type=int, default=500)
-    parser.add_argument(
-        "--device", default=None, help="Defaults to auto-detected (cuda/mps/cpu)."
-    )
+    add_run_arguments(parser)
     parser.add_argument(
         "--checkpoint-dir",
         type=Path,
@@ -929,63 +996,9 @@ def main(argv: list[str] | None = None) -> None:
         default=None,
         help="Save the combined results (all benchmarked equations) as JSON here.",
     )
-    parser.add_argument(
-        "--lr", type=float, default=1e-3, help="Learning rate for FNO/DeepONet/PINN."
-    )
-    parser.add_argument(
-        "--scheduler-step",
-        type=int,
-        default=None,
-        help="StepLR: decay lr every N epochs (unset: constant lr). PDEBench's own FNO baselines use 100.",
-    )
-    parser.add_argument(
-        "--scheduler-gamma",
-        type=float,
-        default=0.5,
-        help="StepLR decay factor, only used if --scheduler-step is set.",
-    )
-    parser.add_argument(
-        "--fno-modes",
-        type=int,
-        default=None,
-        help="Override FNO's Fourier mode count (per-equation default otherwise).",
-    )
-    parser.add_argument(
-        "--fno-width",
-        type=int,
-        default=None,
-        help="Override FNO's channel width (per-equation default otherwise).",
-    )
-    parser.add_argument(
-        "--fno-n-layers",
-        type=int,
-        default=None,
-        help="Override FNO's number of spectral layers (per-equation default otherwise).",
-    )
-    parser.add_argument(
-        "--deeponet-hidden-dim",
-        type=int,
-        default=None,
-        help="Override DeepONet's branch/trunk hidden width (default 128).",
-    )
-    parser.add_argument(
-        "--deeponet-latent-dim",
-        type=int,
-        default=None,
-        help="Override DeepONet's latent (dot-product) dimension (default 64).",
-    )
     args = parser.parse_args(argv)
 
-    hyperparams = BenchmarkHyperparams(
-        lr=args.lr,
-        scheduler_step=args.scheduler_step,
-        scheduler_gamma=args.scheduler_gamma,
-        fno_modes=args.fno_modes,
-        fno_width=args.fno_width,
-        fno_n_layers=args.fno_n_layers,
-        deeponet_hidden_dim=args.deeponet_hidden_dim,
-        deeponet_latent_dim=args.deeponet_latent_dim,
-    )
+    hyperparams = hyperparams_from_args(args)
 
     ns_files = args.navier_stokes_file or [
         Path("data/raw/pdebench-navierstokes2d/ns_incom_inhom_2d_512-0.h5")

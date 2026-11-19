@@ -102,6 +102,18 @@ def test_burgers_dataset_train_val_test_split_sizes(tmp_path):
     assert len(test_ds) == 1
 
 
+def test_burgers_max_samples_reads_only_the_first_samples_of_the_split(tmp_path):
+    path = tmp_path / "burgers.hdf5"
+    _write_burgers_h5(path, n=10)
+    full = Burgers1DDataset(path, split="test", split_fractions=(0.5, 0.2, 0.3))
+    limited = Burgers1DDataset(
+        path, split="test", split_fractions=(0.5, 0.2, 0.3), max_samples=2
+    )
+    assert len(full) == 3 and len(limited) == 2
+    assert np.array_equal(limited.data.numpy(), full.data.numpy()[:2])
+    assert len(Burgers1DDataset(path, max_samples=100)) == 8
+
+
 def test_burgers_missing_key_raises(tmp_path):
     path = tmp_path / "bad.hdf5"
     with h5py.File(path, "w") as f:

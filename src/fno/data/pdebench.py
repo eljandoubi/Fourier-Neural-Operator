@@ -104,6 +104,9 @@ class Burgers1DDataset(Dataset):
     Expects a PDEBench-style HDF5 file with "tensor" (N, T, X), "x-coordinate"
     (X,), and "t-coordinate" ((T+1,) or (T,)) keys (each file is a single fixed
     viscosity). `self.t` is aligned to the tensor's T timesteps.
+
+    `max_samples` reads only the first samples of the split from disk: a full
+    Burgers file is about 8 GB, more than a free Colab VM holds in memory.
     """
 
     def __init__(
@@ -112,6 +115,7 @@ class Burgers1DDataset(Dataset):
         initial_step: int = 10,
         split: str = "train",
         split_fractions: tuple[float, float, float] = (0.8, 0.1, 0.1),
+        max_samples: int | None = None,
     ) -> None:
         self.file_path = Path(file_path)
         self.initial_step = initial_step
@@ -121,14 +125,19 @@ class Burgers1DDataset(Dataset):
                 {"tensor", "x-coordinate", "t-coordinate"},
                 self.file_path,
             )
-            tensor = np.asarray(f["tensor"], dtype=np.float32)  # (N, T, X)
+            sel = _split_slice(f["tensor"].shape[0], split, split_fractions)
+            stop = (
+                sel.stop
+                if max_samples is None
+                else min(sel.stop, sel.start + max_samples)
+            )
+            tensor = np.asarray(
+                f["tensor"][sel.start : stop], dtype=np.float32
+            )  # (N, T, X)
             x = np.asarray(f["x-coordinate"], dtype=np.float32)
             t_coord = np.asarray(f["t-coordinate"], dtype=np.float32)
 
-        n_samples = tensor.shape[0]
-        sel = _split_slice(n_samples, split, split_fractions)
-
-        self.data = torch.from_numpy(tensor[sel])  # (N, T, X)
+        self.data = torch.from_numpy(tensor)  # (N, T, X)
         self.grid = torch.from_numpy(x).unsqueeze(-1)  # (X, 1)
         self.t = torch.from_numpy(t_coord[: tensor.shape[1]])  # (T,)
 

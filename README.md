@@ -3,7 +3,7 @@
 <p align="center"><em>Fourier Neural Operator, DeepONet, and PINN: implemented, tested, and benchmarked head-to-head on the same PDE data.</em></p>
 
 <p align="center">
-  <a href="https://github.com/eljandoubi/FNO/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/eljandoubi/FNO/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="https://github.com/eljandoubi/Fourier-Neural-Operator/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/eljandoubi/Fourier-Neural-Operator/actions/workflows/ci.yml/badge.svg"></a>
   <a href="https://www.python.org/"><img alt="Python 3.12+" src="https://img.shields.io/badge/python-3.12%2B-blue"></a>
   <a href="https://pytorch.org/"><img alt="PyTorch 2.14+" src="https://img.shields.io/badge/PyTorch-2.14%2B-ee4c2c"></a>
   <a href="https://github.com/astral-sh/uv"><img alt="uv" src="https://img.shields.io/badge/managed%20by-uv-8A2BE2"></a>
@@ -20,6 +20,7 @@
 - [Benchmark](#benchmark)
 - [Hyperparameter Search](#hyperparameter-search)
 - [Pipeline](#pipeline)
+- [Results](#results)
 - [Development](#development)
 - [License](#license)
 
@@ -106,7 +107,9 @@ uv run fno-inspect-h5 data/raw/pdebench-navierstokes2d/ns_incom_inhom_2d_512-0.h
 ```python
 from fno.data.pdebench import DarcyFlowDataset
 
-ds = DarcyFlowDataset("data/raw/pdebench-darcy2d/2D_DarcyFlow_beta1.0_Train.hdf5", split="train")
+ds = DarcyFlowDataset(
+    "data/raw/pdebench-darcy2d/2D_DarcyFlow_beta1.0_Train.hdf5", split="train"
+)
 input_field, target_field, grid = ds[0]
 ```
 
@@ -137,22 +140,42 @@ Every cell below is backed by a test that runs against real downloaded data (not
 
 ```python
 from fno.models.pinn import PINN
-from fno.training.pinn import train_pinn_burgers, train_pinn_darcy, train_pinn_navier_stokes
+from fno.training.pinn import (
+    train_pinn_burgers,
+    train_pinn_darcy,
+    train_pinn_navier_stokes,
+)
 
 model = PINN(in_dim=2, out_dim=1)
 history = train_pinn_burgers(
-    model, x_ic, u_ic, nu=0.01, domain_x=(0.0, 1.0), domain_t=(0.0, 2.0),
+    model,
+    x_ic,
+    u_ic,
+    nu=0.01,
+    domain_x=(0.0, 1.0),
+    domain_t=(0.0, 2.0),
 )
 
 model = PINN(in_dim=2, out_dim=1)
 history = train_pinn_darcy(
-    model, coefficient_field, domain=(0.0, 1.0, 0.0, 1.0), forcing=1.0,
+    model,
+    coefficient_field,
+    domain=(0.0, 1.0, 0.0, 1.0),
+    forcing=1.0,
 )
 
 model = PINN(in_dim=3, out_dim=2)  # (x, y, t) -> (psi, p)
 history = train_pinn_navier_stokes(
-    model, force_x_field, force_y_field, domain=(0.0, 1.0, 0.0, 1.0), nu=0.01,
-    x_ic=x_ic, y_ic=y_ic, u_ic=u_ic, v_ic=v_ic, domain_t=(0.0, 1.0),
+    model,
+    force_x_field,
+    force_y_field,
+    domain=(0.0, 1.0, 0.0, 1.0),
+    nu=0.01,
+    x_ic=x_ic,
+    y_ic=y_ic,
+    u_ic=u_ic,
+    v_ic=v_ic,
+    domain_t=(0.0, 1.0),
 )
 ```
 
@@ -275,6 +298,30 @@ runs/demo/
 3. **Search trial level**: search trials themselves aren't individually checkpointed (they're small/fast by design), so an interrupted `search_<eq>` step restarts the grid from scratch on retry, but once it completes, its result is durable (level 1).
 
 Useful flags: `--equation` (repeatable, defaults to all three), `--data-root`, `--force` (ignore saved state and redo every step), `--device`, `--search` (+ `--search-lr`/`--search-fno-width`/`--search-deeponet-hidden-dim`, each repeatable, + `--search-n-train`/`--search-n-test`/`--search-epochs`, + `--search-strategy {grid,random}`/`--search-n-trials`/`--search-seed` for the `random` strategy).
+
+## Results
+
+Full-scale runs on one free Colab T4 (PyTorch 2.14, fp32), one seed per row. Errors are relative $L^2$ errors on held-out test samples, and the raw files are in [`results/`](results/).
+
+| equation | model | parameters | train time (s) | test $L^2$ | super-resolution $L^2$ |
+| --- | --- | --- | --- | --- | --- |
+| Darcy | FNO2d | 1,186,177 | 755 | 0.0375 | 0.0479 |
+| Darcy | DeepONet | 607,361 | 113 | 0.0709 | 0.0710 |
+| Darcy | PINN (one instance) | 16,897 | 243 | 0.696 | n/a |
+| Burgers | FNO1d | 288,001 | 291 | 0.1061 | 0.1061 |
+| Burgers | DeepONet | 410,625 | 173 | 0.1886 | 0.1886 |
+| Burgers | PINN (one instance) | 16,897 | 262 | 0.2971 | n/a |
+
+```bash
+uv run fno-pipeline --run-dir runs/darcy   --equation darcy   --n-train 7000 --n-test 1000 --epochs 100 --scheduler-step 20 --scheduler-gamma 0.5 --pinn-epochs 15000
+uv run fno-pipeline --run-dir runs/burgers --equation burgers --n-train 3000 --n-test 500  --epochs 100 --scheduler-step 20 --scheduler-gamma 0.5 --pinn-epochs 15000
+```
+
+- **Darcy** (`2D_DarcyFlow_beta1.0`): the operators train on fields downsampled to 64 x 64 and the super-resolution column scores them directly against the native 128 x 128 solutions. FNO is about twice as accurate as DeepONet and loses a little accuracy at the finer grid. DeepONet's branch input stays at the training resolution and only its query grid is refined, so its two columns are nearly equal.
+- **Burgers** (`1D_Burgers_Sols_Nu0.01`): the operators map the first 10 time steps of the solution to its value at the final time, trained at 256 points and scored at the native 1024 points.
+- **PINN rows** fit one instance with their own physics residual, so they are not comparable with the operator rows. The Darcy PINN is still at 0.70 relative error after 15,000 iterations.
+- The Burgers timings were taken while the GPU was shared with another job.
+- Not done: no hyperparameter search (default per-equation architectures), one seed, and Navier-Stokes was not run at scale because one shard is about 10 GB and holds only 4 trajectories.
 
 ## Development
 

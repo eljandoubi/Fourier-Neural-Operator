@@ -1,0 +1,29 @@
+[
+  {
+    "name": "FNO2d",
+    "n_parameters": 1186177,
+    "train_time_s": 754.56041378,
+    "inference_latency_ms": 9.814283799994428,
+    "test_l2_error": 0.037476648576557636,
+    "superres_l2_error": 0.04790989635512233,
+    "note": ""
+  },
+  {
+    "name": "DeepONet",
+    "n_parameters": 607361,
+    "train_time_s": 112.89205976200003,
+    "inference_latency_ms": 0.4983766000123069,
+    "test_l2_error": 0.0709038614295423,
+    "superres_l2_error": 0.0710006458684802,
+    "note": ""
+  },
+  {
+    "name": "PINN (single-instance fit)",
+    "n_parameters": 16897,
+    "train_time_s": 243.0887800800001,
+    "inference_latency_ms": 1.325148999967496,
+    "test_l2_error": 0.6961631774902344,
+    "superres_l2_error": null,
+    "note": "fit to ONE instance, not an operator -- not directly comparable to the rows above"
+  }
+]

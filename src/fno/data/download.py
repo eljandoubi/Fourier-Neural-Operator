@@ -18,7 +18,7 @@ from tqdm import tqdm
 DEFAULT_DATA_ROOT = Path("data")
 
 # The full PDEBench dataset (all equations) lives in one DaRUS/Dataverse
-# record with ~275 incompressible NS shards -- rather than hand-transcribing
+# record with ~275 incompressible NS shards, rather than hand-transcribing
 # hundreds of file IDs/checksums (error-prone), fetch the authoritative list
 # from the Dataverse API at runtime and cache it locally.
 NS_INCOM_DATASET_DOI = "doi:10.18419/darus-2986"
@@ -113,10 +113,10 @@ DATASETS: dict[str, Dataset] = {
         extract=True,
     ),
     # Single representative files from PDEBench (github.com/pdebench/PDEBench),
-    # fetched directly from its DaRUS hosting -- not the whole multi-GB/TB PDE split.
+    # fetched directly from its DaRUS hosting, not the whole multi-GB/TB PDE split.
     "pdebench-burgers1d": Dataset(
         name="pdebench-burgers1d",
-        description="PDEBench 1D Burgers' equation -- pick one or more viscosities.",
+        description="PDEBench 1D Burgers' equation. Pick one or more viscosities.",
         files={
             "nu0.001": DatasetFile(
                 url="https://darus.uni-stuttgart.de/api/access/datafile/268190",
@@ -184,7 +184,7 @@ DATASETS: dict[str, Dataset] = {
     ),
     "pdebench-darcy2d": Dataset(
         name="pdebench-darcy2d",
-        description="PDEBench 2D Darcy Flow -- pick one or more diffusion coefficients (beta).",
+        description="PDEBench 2D Darcy Flow. Pick one or more diffusion coefficients (beta).",
         files={
             "beta0.01": DatasetFile(
                 url="https://darus.uni-stuttgart.de/api/access/datafile/133217",
@@ -218,7 +218,7 @@ DATASETS: dict[str, Dataset] = {
     "pdebench-navierstokes2d": Dataset(
         name="pdebench-navierstokes2d",
         description=(
-            "PDEBench 2D incompressible Navier-Stokes -- pick one or more shards "
+            "PDEBench 2D incompressible Navier-Stokes. Pick one or more shards "
             "(~8-10 GB each, ~275 total). Supports --variant shard<A>-shard<B> "
             "ranges and comma-separated lists."
         ),
@@ -409,7 +409,7 @@ def main(argv: list[str] | None = None) -> None:
         if unknown:
             raise SystemExit(
                 f"Unknown variant(s) for '{spec.name}': {', '.join(sorted(unknown))}. "
-                f"Available: {', '.join(sorted(files)) if len(files) <= 20 else f'{len(files)} shards -- see --list'}"
+                f"Available: {', '.join(sorted(files)) if len(files) <= 20 else f'{len(files)} shards; see --list'}"
             )
     else:
         selected = [spec.default_variant]

@@ -1,6 +1,6 @@
 """Unit tests for fno.training.trainer / fno.training.collate.
 
-W&B network calls are mocked -- these tests never hit the network. The final
+W&B network calls are mocked; these tests never hit the network. The final
 test trains on a small real Darcy subset when available, as a mechanics check
 (not a rigorous train/val split or an accuracy benchmark).
 """
@@ -154,7 +154,7 @@ def test_fit_resumes_from_checkpoint_instead_of_restarting(tmp_path):
     )
 
     assert len(second_history["train_loss"]) == 5
-    # The first 3 entries must be untouched (not recomputed) -- proof it actually resumed.
+    # The first 3 entries must be untouched (not recomputed): proof it actually resumed.
     assert second_history["train_loss"][:3] == first_history["train_loss"]
 
     # Calling fit() again with the same (already-reached) epoch count is a no-op.
@@ -202,7 +202,7 @@ def test_fit_applies_and_resumes_lr_schedule(tmp_path):
     checkpoint = torch.load(checkpoint_path)
     assert checkpoint["scheduler_state"]["_last_lr"] == pytest.approx([1e-3 * 0.25])
 
-    # Resume for 2 more epochs -- LR must continue decaying from where it left
+    # Resume for 2 more epochs; LR must continue decaying from where it left
     # off (0.25x), not reset to the initial lr.
     resumed_model = FNO2d(
         modes1=4, modes2=4, width=8, in_channels=3, out_channels=1, n_layers=1
@@ -284,7 +284,7 @@ def test_fit_skips_wandb_when_disabled(monkeypatch):
 @pytest.mark.skipif(not DARCY_FILE.exists(), reason="Darcy sample not downloaded")
 def test_fit_on_small_real_darcy_subset():
     ds = DarcyFlowDataset(DARCY_FILE, split="train")
-    # Mechanics check only -- not a real train/val split or accuracy benchmark.
+    # Mechanics check only, not a real train/val split or accuracy benchmark.
     train_loader = DataLoader(
         Subset(ds, range(16)), batch_size=4, collate_fn=darcy_collate
     )
@@ -305,7 +305,7 @@ def test_fit_on_small_real_darcy_subset():
 @pytest.mark.skipif(not BURGERS_FILE.exists(), reason="Burgers sample not downloaded")
 def test_fit_on_small_real_burgers_subset():
     ds = Burgers1DDataset(BURGERS_FILE, initial_step=10, split="train")
-    # Mechanics check only -- not a real train/val split or accuracy benchmark.
+    # Mechanics check only, not a real train/val split or accuracy benchmark.
     train_loader = DataLoader(
         Subset(ds, range(16)), batch_size=4, collate_fn=burgers_collate
     )
@@ -323,7 +323,7 @@ def test_fit_on_small_real_burgers_subset():
 
 @pytest.mark.skipif(not NS_FILE.exists(), reason="NS_incom shard not downloaded")
 def test_fit_on_small_real_navier_stokes_subset():
-    # Only 4 trajectories per shard -- fractions chosen so train/val are both non-empty.
+    # Only 4 trajectories per shard; fractions chosen so train/val are both non-empty.
     # spatial_stride=8 (512 -> 64) keeps this fast without loading full-res arrays.
     fractions = (0.5, 0.25, 0.25)
     train_ds = NavierStokes2DDataset(
@@ -357,7 +357,7 @@ def test_fit_on_small_real_navier_stokes_subset():
 @pytest.mark.skipif(not DARCY_FILE.exists(), reason="Darcy sample not downloaded")
 def test_fit_deeponet_on_small_real_darcy_subset():
     ds = DarcyFlowDataset(DARCY_FILE, split="train")
-    # Mechanics check only -- not a real train/val split or accuracy benchmark.
+    # Mechanics check only, not a real train/val split or accuracy benchmark.
     train_loader = DataLoader(
         Subset(ds, range(16)), batch_size=4, collate_fn=darcy_deeponet_collate
     )
@@ -382,7 +382,7 @@ def test_fit_deeponet_on_small_real_darcy_subset():
 @pytest.mark.skipif(not BURGERS_FILE.exists(), reason="Burgers sample not downloaded")
 def test_fit_deeponet_on_small_real_burgers_subset():
     ds = Burgers1DDataset(BURGERS_FILE, initial_step=10, split="train")
-    # Mechanics check only -- not a real train/val split or accuracy benchmark.
+    # Mechanics check only, not a real train/val split or accuracy benchmark.
     train_loader = DataLoader(
         Subset(ds, range(16)), batch_size=4, collate_fn=burgers_deeponet_collate
     )
@@ -406,7 +406,7 @@ def test_fit_deeponet_on_small_real_burgers_subset():
 
 @pytest.mark.skipif(not NS_FILE.exists(), reason="NS_incom shard not downloaded")
 def test_fit_deeponet_on_small_real_navier_stokes_subset():
-    # Only 4 trajectories per shard -- fractions chosen so train/val are both non-empty.
+    # Only 4 trajectories per shard; fractions chosen so train/val are both non-empty.
     # spatial_stride=8 (512 -> 64) keeps this fast without loading full-res arrays.
     fractions = (0.5, 0.25, 0.25)
     train_ds = NavierStokes2DDataset(

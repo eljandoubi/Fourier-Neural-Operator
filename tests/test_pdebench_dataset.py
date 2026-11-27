@@ -173,7 +173,7 @@ def test_navier_stokes_dataset_spatial_stride(tmp_path):
 def test_navier_stokes_dataset_train_val_test_split_sizes(tmp_path):
     path = tmp_path / "shard0.h5"
     _write_ns_incom_h5(path, n=4)
-    # Only 4 samples total -- fractions chosen so every split is non-empty.
+    # Only 4 samples total; fractions chosen so every split is non-empty.
     fractions = (0.5, 0.25, 0.25)
     train_ds = NavierStokes2DDataset(path, split="train", split_fractions=fractions)
     val_ds = NavierStokes2DDataset(path, split="val", split_fractions=fractions)

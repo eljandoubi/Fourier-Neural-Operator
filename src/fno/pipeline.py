@@ -101,7 +101,7 @@ def _save_state(run_dir: Path, state: dict) -> None:
     tmp = path.with_suffix(path.suffix + ".tmp")
     with open(tmp, "w") as f:
         json.dump(state, f, indent=2)
-    tmp.replace(path)  # atomic -- avoids a half-written state file if interrupted
+    tmp.replace(path)  # atomic, avoids a half-written state file if interrupted
 
 
 def _is_done(state: dict, step: str) -> bool:
@@ -212,7 +212,7 @@ def _run_equation_pipeline(
 
     if not file_path.exists():
         raise RuntimeError(
-            f"{equation}: expected {file_path} after the download step -- "
+            f"{equation}: expected {file_path} after the download step; "
             "was the data directory removed after a previous successful run?"
         )
 

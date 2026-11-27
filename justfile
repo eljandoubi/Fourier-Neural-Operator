@@ -1,4 +1,4 @@
-# FNO project task runner -- see https://github.com/casey/just
+# FNO project task runner; see https://github.com/casey/just
 # Run `just --list` (or bare `just`) to see all available recipes.
 
 # List available recipes

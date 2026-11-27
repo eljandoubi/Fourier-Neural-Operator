@@ -1,4 +1,4 @@
-"""Unit tests for fno.pipeline -- the resumable download/benchmark/plot
+"""Unit tests for fno.pipeline: the resumable download/benchmark/plot
 orchestrator. Download and benchmark steps are faked (call-counted) so these
 tests run fast and don't touch the network or do real training; one
 real-data-conditional smoke test exercises the actual wiring end to end.
@@ -16,7 +16,7 @@ DARCY_FILE = Path("data/raw/pdebench-darcy2d/2D_DarcyFlow_beta1.0_Train.hdf5")
 
 
 def _fake_download_main_factory(data_root: Path):
-    """Returns (fake_download_main, calls) -- the fake just touches the
+    """Returns (fake_download_main, calls); the fake just touches the
     expected destination file instead of hitting the network."""
     calls: list[list[str]] = []
 
@@ -35,7 +35,7 @@ def _fake_download_main_factory(data_root: Path):
 
 
 def _fake_benchmark_factory(name: str, *, fail_first_n: int = 0):
-    """Returns (fake_fn, calls) -- fake_fn matches run_{darcy,burgers,navier_stokes}_benchmark's
+    """Returns (fake_fn, calls); fake_fn matches run_{darcy,burgers,navier_stokes}_benchmark's
     signature closely enough for the pipeline's call sites (file_path, **kwargs)."""
     calls: list[Path] = []
 
@@ -172,7 +172,7 @@ def test_pipeline_resumes_after_simulated_interruption(monkeypatch, tmp_path):
     # Resume: Darcy must be skipped, Burgers must actually run again and succeed.
     results = pipeline.run_pipeline(config)
 
-    assert len(darcy_calls) == 1  # unchanged -- not redone
+    assert len(darcy_calls) == 1  # unchanged, not redone
     assert len(burgers_calls) == 2  # retried and this time succeeded
     assert set(results) == {"darcy", "burgers"}
 

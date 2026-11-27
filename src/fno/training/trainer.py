@@ -40,7 +40,7 @@ def train_one_epoch(
     device: torch.device,
     loss_fn: Callable = nn.functional.mse_loss,
 ) -> float:
-    """One training epoch. Each batch is (*model_inputs, targets) -- e.g. (input,
+    """One training epoch. Each batch is (*model_inputs, targets), e.g. (input,
     targets) for FNO, or (branch_input, trunk_input, targets) for DeepONet.
     """
     model.train()
@@ -96,7 +96,7 @@ def save_checkpoint(
     )
     tmp_path.replace(
         path
-    )  # atomic on the same filesystem -- avoids a half-written file if interrupted
+    )  # atomic on the same filesystem, avoids a half-written file if interrupted
 
 
 def load_checkpoint(
@@ -106,7 +106,7 @@ def load_checkpoint(
     map_location: str | None = None,
     scheduler: torch.optim.lr_scheduler.LRScheduler | None = None,
 ) -> tuple[int, dict[str, list[float]]]:
-    """Returns (epoch, history) -- `epoch` is the number of epochs already
+    """Returns (epoch, history); `epoch` is the number of epochs already
     completed, i.e. training should resume starting at `range(epoch, ...)`.
     """
     checkpoint = torch.load(path, map_location=map_location)

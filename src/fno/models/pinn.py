@@ -7,7 +7,7 @@ partial differential equations" (https://arxiv.org/abs/1711.10561).
 Unlike FNO/DeepONet, a PINN is NOT an operator: it approximates the solution
 of ONE specific PDE instance (fixed parameters/initial condition), trained by
 minimizing the PDE residual (via autograd) plus a data-fit term on the
-initial/boundary conditions -- it must be retrained for every new instance.
+initial/boundary conditions; it must be retrained for every new instance.
 """
 
 from __future__ import annotations

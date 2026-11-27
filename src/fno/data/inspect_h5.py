@@ -1,4 +1,4 @@
-"""Print the key/shape/dtype tree of an HDF5 file -- run before writing a
+"""Print the key/shape/dtype tree of an HDF5 file; run before writing a
 loader for a new PDEBench format (e.g. NS_Incom, whose layout isn't confirmed).
 """
 

@@ -8,7 +8,7 @@ from pathlib import Path
 
 import matplotlib
 
-matplotlib.use("Agg")  # headless-safe -- no display server needed to save PNGs
+matplotlib.use("Agg")  # headless-safe, no display server needed to save PNGs
 import matplotlib.pyplot as plt
 
 from fno.benchmarks.harness import BenchmarkResult

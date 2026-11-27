@@ -78,7 +78,7 @@ def test_select_candidates_random_caps_at_n_trials_and_is_a_subset():
 
     assert len(candidates) == 4
     seen = {tuple(asdict(c).items()) for c in candidates}
-    assert len(seen) == 4  # no duplicates -- sampled without replacement
+    assert len(seen) == 4  # no duplicates, sampled without replacement
     assert all(c in full_grid for c in candidates)
 
 

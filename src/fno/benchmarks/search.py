@@ -1,7 +1,7 @@
 """Hyperparameter search over a small data subset (fast), then hand the
 winning `BenchmarkHyperparams` to the caller for a full-data run.
 
-Two strategies, both dependency-free -- not a general-purpose HPO library --
+Two strategies, both dependency-free and not a general-purpose HPO library,
 matching this project's "keep it simple, verify honestly" philosophy:
   - "grid": exhaustive Cartesian product over `SearchSpace`.
   - "random": samples up to `n_trials` unique combinations at random
@@ -68,7 +68,7 @@ class SearchSpace:
 class SearchTrial:
     hyperparams: dict
     scores: dict[str, float]  # model name -> test_l2_error
-    combined_score: float  # sum of scores.values() -- lower is better
+    combined_score: float  # sum of scores.values(), lower is better
 
 
 def _expand_search_space(space: SearchSpace) -> list[BenchmarkHyperparams]:
@@ -89,7 +89,7 @@ def _select_candidates(
     if strategy == "grid":
         return all_candidates
     if strategy == "random":
-        # Sample without replacement -- once n_trials >= grid size this is
+        # Sample without replacement; once n_trials >= grid size this is
         # just the full grid, so "random" never wastes a trial on a repeat.
         rng = random.Random(seed)
         return rng.sample(all_candidates, k=min(n_trials, len(all_candidates)))
@@ -162,7 +162,7 @@ def search_hyperparams(
 
     `strategy="grid"` (default) tries every combination in `search_space`.
     `strategy="random"` instead samples up to `n_trials` unique combinations
-    at random (seeded, for reproducibility) -- usually more efficient than
+    at random (seeded, for reproducibility); usually more efficient than
     grid search for the same budget once the space has more than a couple
     of knobs being varied at once (Bergstra & Bengio, 2012), and its cost
     doesn't explode combinatorially as you add candidate values.

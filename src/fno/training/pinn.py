@@ -5,12 +5,12 @@ Flow (-div(a*grad(u)) = f), and 2D incompressible Navier-Stokes with external
 forcing (u_t + u.grad(u) = -grad(p) + nu*lap(u) + f, div(u) = 0), all three
 of this repo's target equations. Navier-Stokes uses the classic stream-function
 formulation (u=psi_y, v=-psi_x) so incompressibility is satisfied automatically
-by construction, and the network jointly predicts (psi, p) -- no ground-truth
+by construction, and the network jointly predicts (psi, p); no ground-truth
 pressure data is needed for training.
 
 Note the fundamentally different training paradigm vs. fno.training.trainer:
 a PINN fits ONE PDE instance (fixed parameters, fixed initial/boundary data)
-by minimizing its own residual, not a data loss over many samples -- there is
+by minimizing its own residual, not a data loss over many samples; there is
 no DataLoader of (input, target) pairs here.
 """
 
@@ -24,7 +24,7 @@ from torch import Tensor, nn
 def _grad(output: Tensor, inputs: Tensor) -> Tensor:
     """d(output)/d(inputs). Handles two distinct "no dependence" cases that
     plain torch.autograd.grad would otherwise raise on instead of returning
-    zero: (1) `output` doesn't require grad at all -- e.g. it's a constant,
+    zero: (1) `output` doesn't require grad at all, e.g. it's a constant,
     or itself already a zero-fallback from a previous `_grad` call, so a
     further derivative is trivially zero; (2) `output` requires grad but
     `inputs` isn't reachable from it (allow_unused=True), e.g. a steady-state
@@ -126,7 +126,7 @@ def _interpolate_field(
 ) -> Tensor:
     """Differentiably bilinear-interpolate a (H, W) field, where field[i, j]
     sits at (x=domain_x_grid[i], y=domain_y_grid[j]), at continuous query
-    points (x, y) -- each (N, 1). `domain` is (x_min, x_max, y_min, y_max).
+    points (x, y), each (N, 1). `domain` is (x_min, x_max, y_min, y_max).
     """
     x_min, x_max, y_min, y_max = domain
     x_norm = 2 * (x - x_min) / (x_max - x_min) - 1

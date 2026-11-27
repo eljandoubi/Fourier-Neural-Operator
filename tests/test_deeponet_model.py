@@ -42,8 +42,8 @@ def test_deeponet_multi_output_channels():
 
 
 def test_deeponet_trunk_resolution_independence():
-    """Same trained weights must accept a different number/set of query points --
-    branch (input function sampling) is fixed, but the trunk (query locations) isn't.
+    """Same trained weights must accept a different number/set of query points:
+    the branch (input function sampling) is fixed, but the trunk (query locations) isn't.
     """
     model = DeepONet(
         branch_input_dim=64,

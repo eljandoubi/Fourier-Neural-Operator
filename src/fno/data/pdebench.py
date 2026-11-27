@@ -162,7 +162,7 @@ class NavierStokes2DDataset(Dataset):
     which avoids loading the full-resolution arrays (~8GB+ per shard) into memory.
 
     Each shard only has 4 trajectories, so a train/val/test split on a single
-    shard is extremely tight (may round to 0 for a split) -- pass several
+    shard is extremely tight (may round to 0 for a split); pass several
     shard paths or adjust `split_fractions` accordingly.
     """
 

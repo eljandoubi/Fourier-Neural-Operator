@@ -42,7 +42,7 @@ def test_pinn_output_shape():
 
 
 class _QuadraticToy(nn.Module):
-    """u(x, t) = x^2 * t -- a fixed, non-trained function with known derivatives,
+    """u(x, t) = x^2 * t, a fixed, non-trained function with known derivatives,
     used to verify the autograd residual formula independent of training."""
 
     def forward(self, coords: torch.Tensor) -> torch.Tensor:
@@ -117,7 +117,7 @@ def test_train_pinn_on_real_burgers_ic():
     ds = Burgers1DDataset(BURGERS_FILE, split="train")
     _window, trajectory, grid = ds[0]
     x_ic = grid  # (X, 1)
-    u_ic = trajectory[0].unsqueeze(-1)  # (X, 1) -- t=0 slice
+    u_ic = trajectory[0].unsqueeze(-1)  # (X, 1), t=0 slice
 
     model = PINN(in_dim=2, out_dim=1, hidden_dim=20, n_layers=4)
     history = train_pinn_burgers(
@@ -138,7 +138,7 @@ def test_train_pinn_on_real_burgers_ic():
 
 
 def test_interpolate_field_matches_grid_values():
-    """Query the interpolant at exact grid points -- if x/y axes were swapped
+    """Query the interpolant at exact grid points. If x/y axes were swapped
     this would return the transpose of `field` and fail (field is asymmetric)."""
     h, w = 5, 5
     field = torch.arange(h * w, dtype=torch.float32).reshape(h, w)
@@ -154,7 +154,7 @@ def test_interpolate_field_matches_grid_values():
 
 
 class _DarcyToy(nn.Module):
-    """u(x, y) = x^2 + y^2 -- a fixed, non-trained function with known
+    """u(x, y) = x^2 + y^2, a fixed, non-trained function with known
     derivatives, used with a constant coefficient field to verify the
     darcy_residual formula independent of training."""
 
@@ -201,7 +201,7 @@ def test_darcy_pinn_loss_gradients_flow():
 
 def test_train_pinn_darcy_reduces_loss():
     torch.manual_seed(0)
-    coefficient_field = torch.ones(16, 16)  # constant coefficient -- simplest case
+    coefficient_field = torch.ones(16, 16)  # constant coefficient, simplest case
     model = PINN(in_dim=2, out_dim=1, hidden_dim=20, n_layers=4)
 
     history = train_pinn_darcy(
@@ -250,7 +250,7 @@ def test_train_pinn_on_real_darcy_coefficient_field():
 
 def test_stream_function_satisfies_continuity_automatically():
     """u=psi_y, v=-psi_x guarantees u_x+v_y=0 for ANY smooth psi, by
-    construction -- checked here for a real (randomly initialized) network,
+    construction, checked here for a real (randomly initialized) network,
     not just a hand-picked toy."""
     torch.manual_seed(0)
     model = PINN(in_dim=3, out_dim=2, hidden_dim=16, n_layers=3)
@@ -268,7 +268,7 @@ def test_stream_function_satisfies_continuity_automatically():
 
 
 class _NavierStokesToy(nn.Module):
-    """(psi, p) = (x*y, 2*x + 3*y) -- known derivatives (stream-function
+    """(psi, p) = (x*y, 2*x + 3*y), known derivatives (stream-function
     formulation), used with linear forcing fields (exactly reproduced by
     bilinear interpolation) to verify navier_stokes_residual independent of
     training."""
@@ -351,7 +351,7 @@ def test_navier_stokes_pinn_loss_gradients_flow():
 
 def test_train_pinn_navier_stokes_reduces_loss():
     torch.manual_seed(0)
-    force_field = torch.zeros(16, 16)  # no forcing -- simplest case
+    force_field = torch.zeros(16, 16)  # no forcing, simplest case
     x_ic = torch.linspace(0.0, 1.0, 20).unsqueeze(-1)
     y_ic = torch.linspace(0.0, 1.0, 20).unsqueeze(-1)
     u_ic = torch.sin(torch.pi * x_ic)
@@ -405,7 +405,7 @@ def test_train_pinn_on_real_navier_stokes_ic():
             grid[..., 1].min().item(),
             grid[..., 1].max().item(),
         ),
-        nu=0.01,  # assumed placeholder -- not verified against PDEBench's actual generation params
+        nu=0.01,  # assumed placeholder, not verified against PDEBench's actual generation params
         x_ic=x_ic,
         y_ic=y_ic,
         u_ic=u_ic,

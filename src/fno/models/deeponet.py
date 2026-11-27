@@ -31,8 +31,8 @@ class DeepONet(nn.Module):
     evaluated at arbitrary query points.
 
     Forward: (branch_input, trunk_input) -> output.
-    - branch_input: (B, branch_input_dim) -- flattened input function samples.
-    - trunk_input: (N, trunk_input_dim) -- N query coordinates, shared across
+    - branch_input: (B, branch_input_dim), flattened input function samples.
+    - trunk_input: (N, trunk_input_dim), N query coordinates, shared across
       the batch.
     - output: (B, N, out_channels).
     """

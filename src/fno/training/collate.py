@@ -36,7 +36,7 @@ def burgers_collate(
     inputs = torch.cat([windows, grid], dim=-1)  # (B, X, initial_step + 1)
 
     trajectories = torch.stack(trajectories)  # (B, T, X)
-    targets = trajectories[:, -1, :].unsqueeze(-1)  # (B, X, 1) -- final timestep
+    targets = trajectories[:, -1, :].unsqueeze(-1)  # (B, X, 1), final timestep
     return inputs, targets
 
 
@@ -58,7 +58,7 @@ def navier_stokes_collate(
     inputs = torch.cat([windows, grid], dim=-1)  # (B, H, W, t*c + 2)
 
     trajectories = torch.stack(trajectories)  # (B, T, 2, H, W)
-    targets = trajectories[:, -1].permute(0, 2, 3, 1)  # (B, H, W, 2) -- final timestep
+    targets = trajectories[:, -1].permute(0, 2, 3, 1)  # (B, H, W, 2), final timestep
     return inputs, targets
 
 
@@ -93,7 +93,7 @@ def burgers_deeponet_collate(
     trunk_input = grids[0]  # (X, 1)
 
     trajectories = torch.stack(trajectories)  # (B, T, X)
-    targets = trajectories[:, -1, :].unsqueeze(-1)  # (B, X, 1) -- final timestep
+    targets = trajectories[:, -1, :].unsqueeze(-1)  # (B, X, 1), final timestep
     return branch_input, trunk_input, targets
 
 

@@ -1,6 +1,6 @@
 """Unit tests for fno.benchmarks.harness.
 
-Uses tiny configs (few samples/epochs, small models) throughout -- these are
+Uses tiny configs (few samples/epochs, small models) throughout; these are
 mechanics checks confirming the harness wires everything together correctly,
 not a claim of converged/meaningful benchmark numbers.
 """
@@ -76,12 +76,12 @@ def test_deeponet_superres_view_keeps_field_low_res_but_target_grid_high_res(tmp
         1,
         8,
         8,
-    )  # downsampled -- matches the branch's fixed sensor count
+    )  # downsampled, matches the branch's fixed sensor count
     assert target.shape == (
         1,
         16,
         16,
-    )  # native resolution -- real ground truth, not approximated
+    )  # native resolution, real ground truth, not approximated
     assert grid.shape == (16, 16, 2)
 
     batch = [view[0], view[1]]
@@ -106,7 +106,7 @@ def test_format_summary_includes_all_rows_and_note():
             train_time_s=3.0,
             inference_latency_ms=1.0,
             test_l2_error=0.1,
-            note="fit to ONE instance, not an operator -- not directly comparable to the rows above",
+            note="fit to ONE instance, not an operator; not directly comparable to the rows above",
         ),
     ]
     summary = format_summary(results)

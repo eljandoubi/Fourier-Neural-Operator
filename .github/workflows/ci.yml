@@ -50,7 +50,7 @@ jobs:
         run: uv sync --locked
 
       # Real-data-conditional tests (@pytest.mark.skipif on a downloaded
-      # PDEBench file) are skipped here since no data is downloaded in CI --
+      # PDEBench file) are skipped here since no data is downloaded in CI;
       # they still run locally once you've run `fno-download`.
       - name: Run tests
         run: uv run pytest -q

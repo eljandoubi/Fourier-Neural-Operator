@@ -3,8 +3,8 @@
 Reference: Li et al., "Fourier Neural Operator for Parametric Partial
 Differential Equations" (https://arxiv.org/abs/2010.08895).
 
-Convention: models take channel-last input (B, *spatial, C_in) -- typically
-the raw field(s) concatenated with grid coordinates along the last axis --
+Convention: models take channel-last input (B, *spatial, C_in), typically
+the raw field(s) concatenated with grid coordinates along the last axis,
 and return channel-last output (B, *spatial, C_out). Spectral convolutions
 truncate to a fixed number of low-frequency Fourier modes independent of the
 spatial resolution, which is what gives FNO its zero-shot super-resolution

@@ -2,7 +2,7 @@
 
 Includes a genuine (not approximated) zero-shot super-resolution test for the
 operator models: they are trained on 64x64-downsampled Darcy fields and
-evaluated against the REAL 128x128 ground truth PDEBench already provides --
+evaluated against the REAL 128x128 ground truth PDEBench already provides;
 no interpolated/synthetic "high-res" data is needed since Darcy's native
 resolution already gives us that for free.
 
@@ -72,7 +72,7 @@ class BenchmarkResult:
 class BenchmarkHyperparams:
     """Optimizer/architecture overrides for `run_*_benchmark`. Fields left as
     `None` fall back to that function's own per-equation default (tuned for a
-    fast demo run, not necessarily good accuracy -- see README for real-world
+    fast demo run, not necessarily good accuracy; see README for real-world
     values based on PDEBench's own published FNO baseline configs).
     """
 
@@ -172,7 +172,7 @@ def load_results(path: str | Path) -> list[BenchmarkResult]:
 
 class _DownsampledDarcyView(Dataset):
     """Wraps a DarcyFlowDataset, strided-downsampling field/target/grid (e.g.
-    128x128 -> 64x64) -- used to build the "low-res training data" side of the
+    128x128 -> 64x64), used to build the "low-res training data" side of the
     zero-shot super-resolution test."""
 
     def __init__(self, base: Dataset, stride: int) -> None:
@@ -192,7 +192,7 @@ class _DeepONetSuperresView(Dataset):
     """Pairs a LOW-RES coefficient field (downsampled to match the branch
     net's fixed sensor count) with the HIGH-RES target/grid. This is what
     genuine zero-shot super-resolution means for DeepONet: only the trunk's
-    query resolution is flexible, not the branch's input sampling -- unlike
+    query resolution is flexible, not the branch's input sampling, unlike
     FNO, which is resolution-independent on both ends.
     """
 
@@ -219,7 +219,7 @@ def _deeponet_superres_collate(
     fields, targets, grids = zip(*batch, strict=True)
     fields = torch.stack(
         fields
-    )  # (B, 1, h_low, w_low) -- matches the branch's fixed input size
+    )  # (B, 1, h_low, w_low), matches the branch's fixed input size
     branch_input = fields.reshape(fields.shape[0], -1)
     trunk_input = grids[0].reshape(-1, 2)  # high-res query grid
     targets = torch.stack(targets).permute(0, 2, 3, 1).reshape(fields.shape[0], -1, 1)
@@ -288,7 +288,7 @@ def benchmark_pinn_darcy(
     device: str = "cpu",
 ) -> BenchmarkResult:
     """Fit a PINN directly to ONE Darcy instance and compare against its
-    ground truth. Not an operator -- see module docstring.
+    ground truth. Not an operator; see module docstring.
     """
     device_ = torch.device(device)
     model = PINN(in_dim=2, out_dim=1, hidden_dim=64, n_layers=6)
@@ -333,7 +333,7 @@ def benchmark_pinn_darcy(
         inference_latency_ms=inference_latency_ms,
         test_l2_error=test_l2_error,
         superres_l2_error=None,
-        note="fit to ONE instance, not an operator -- not directly comparable to the rows above",
+        note="fit to ONE instance, not an operator; not directly comparable to the rows above",
     )
 
 
@@ -418,7 +418,7 @@ def run_darcy_benchmark(
         low_res_test, batch_size=32, collate_fn=darcy_deeponet_collate
     )
     # Branch input must stay at the trained (low-res) sensor count; only the
-    # trunk's query grid goes to high-res -- see _DeepONetSuperresView.
+    # trunk's query grid goes to high-res; see _DeepONetSuperresView.
     deeponet_superres_data = Subset(
         _DeepONetSuperresView(full_test, stride=2), range(n_test)
     )
@@ -473,7 +473,7 @@ def run_darcy_benchmark(
 
 class _DownsampledBurgersView(Dataset):
     """Wraps a Burgers1DDataset, strided-downsampling window/trajectory/grid
-    along X -- the 1D analog of _DownsampledDarcyView."""
+    along X, the 1D analog of _DownsampledDarcyView."""
 
     def __init__(self, base: Dataset, stride: int) -> None:
         self.base = base
@@ -510,7 +510,7 @@ def _deeponet_superres_collate_1d(
     windows, trajectories, grids = zip(*batch, strict=True)
     windows = torch.stack(windows)  # (B, initial_step, X_low)
     branch_input = windows.reshape(windows.shape[0], -1)
-    trunk_input = grids[0]  # (X_full, 1) -- native resolution
+    trunk_input = grids[0]  # (X_full, 1), native resolution
     trajectories = torch.stack(trajectories)  # (B, T, X_full)
     targets = trajectories[:, -1, :].unsqueeze(-1)
     return branch_input, trunk_input, targets
@@ -551,7 +551,7 @@ def benchmark_pinn_burgers(
 ) -> BenchmarkResult:
     """Fit a PINN to ONE Burgers instance (its initial condition), then
     compare its prediction at t=domain_t[1] against the real final-timestep
-    ground truth. Not an operator -- see module docstring.
+    ground truth. Not an operator; see module docstring.
     """
     device_ = torch.device(device)
     model = PINN(in_dim=2, out_dim=1, hidden_dim=64, n_layers=6)
@@ -586,7 +586,7 @@ def benchmark_pinn_burgers(
         inference_latency_ms=inference_latency_ms,
         test_l2_error=test_l2_error,
         superres_l2_error=None,
-        note="fit to ONE instance, not an operator -- not directly comparable to the rows above",
+        note="fit to ONE instance, not an operator; not directly comparable to the rows above",
     )
 
 
@@ -722,7 +722,7 @@ def benchmark_pinn_navier_stokes(
 ) -> BenchmarkResult:
     """Fit a PINN to ONE Navier-Stokes instance (its forcing + initial
     condition), then compare its prediction at t=domain_t[1] against the real
-    final-timestep velocity field. Not an operator -- see module docstring.
+    final-timestep velocity field. Not an operator; see module docstring.
     """
     device_ = torch.device(device)
     model = PINN(in_dim=3, out_dim=2, hidden_dim=64, n_layers=6)
@@ -776,7 +776,7 @@ def benchmark_pinn_navier_stokes(
         inference_latency_ms=inference_latency_ms,
         test_l2_error=test_l2_error,
         superres_l2_error=None,
-        note="fit to ONE instance, not an operator -- not directly comparable to the rows above",
+        note="fit to ONE instance, not an operator; not directly comparable to the rows above",
     )
 
 
@@ -792,7 +792,7 @@ def run_navier_stokes_benchmark(
     skip_pinn: bool = False,
 ) -> list[BenchmarkResult]:
     """Only 4 trajectories per downloaded shard, so this uses a (0.5, 0.0, 0.5)
-    train/test split by default rather than the usual (0.8, 0.1, 0.1) -- pass
+    train/test split by default rather than the usual (0.8, 0.1, 0.1); pass
     multiple shard paths for a more meaningful split.
     """
     device = device or trainer.auto_device()
@@ -894,7 +894,7 @@ def run_navier_stokes_benchmark(
     )
 
     grid = high_res_test.grid  # (H, W, 2)
-    force = high_res_test.force[0]  # (2, H, W) -- first test trajectory
+    force = high_res_test.force[0]  # (2, H, W), first test trajectory
     velocity0 = high_res_test.velocity[0]  # (T, 2, H, W)
     if not skip_pinn:
         results.append(
@@ -908,7 +908,7 @@ def run_navier_stokes_benchmark(
                     grid[..., 1].min().item(),
                     grid[..., 1].max().item(),
                 ),
-                nu=0.01,  # assumed placeholder -- not verified against PDEBench's actual generation params
+                nu=0.01,  # assumed placeholder, not verified against PDEBench's actual generation params
                 x_ic=grid[..., 0].reshape(-1, 1),
                 y_ic=grid[..., 1].reshape(-1, 1),
                 u_ic=velocity0[0, 0].reshape(-1, 1),
@@ -1009,7 +1009,7 @@ def main(argv: list[str] | None = None) -> None:
     if args.equation in ("darcy", "all"):
         if not args.darcy_file.exists():
             raise SystemExit(
-                f"{args.darcy_file} not found -- run: uv run fno-download pdebench-darcy2d"
+                f"{args.darcy_file} not found; run: uv run fno-download pdebench-darcy2d"
             )
         print("=== Darcy Flow ===")
         results = run_darcy_benchmark(
@@ -1028,7 +1028,7 @@ def main(argv: list[str] | None = None) -> None:
     if args.equation in ("burgers", "all"):
         if not args.burgers_file.exists():
             raise SystemExit(
-                f"{args.burgers_file} not found -- run: uv run fno-download pdebench-burgers1d"
+                f"{args.burgers_file} not found; run: uv run fno-download pdebench-burgers1d"
             )
         print("\n=== Burgers' Equation ===")
         results = run_burgers_benchmark(
@@ -1048,7 +1048,7 @@ def main(argv: list[str] | None = None) -> None:
         missing = [p for p in ns_files if not p.exists()]
         if missing:
             raise SystemExit(
-                f"{missing} not found -- run: uv run fno-download pdebench-navierstokes2d"
+                f"{missing} not found; run: uv run fno-download pdebench-navierstokes2d"
             )
         print("\n=== Navier-Stokes 2D ===")
         results = run_navier_stokes_benchmark(
